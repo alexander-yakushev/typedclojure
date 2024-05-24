@@ -49,19 +49,21 @@
   (let [start (. System (nanoTime))
         threadpool (::vs/check-threadpool opts)
         shutdown-threadpool? (not threadpool)
-        max-parallelism (or (when (= :available-processors max-parallelism)
-                              (.. Runtime getRuntime availableProcessors))
-                            max-parallelism
-                            (when-some [max-parallelism (System/getProperty "typed.clojure.max-parallelism")]
-                              (if (= ":available-processors")
-                                (.. Runtime getRuntime availableProcessors)
-                                (Integer/parseInt max-parallelism)))
-                            (.. Runtime getRuntime availableProcessors))
+        max-parallelism (when max-parallelism
+                          (or (when (= :available-processors max-parallelism)
+                                (.. Runtime getRuntime availableProcessors))
+                              max-parallelism
+                              (when-some [max-parallelism (System/getProperty "typed.clojure.max-parallelism")]
+                                (if (= ":available-processors")
+                                  (.. Runtime getRuntime availableProcessors)
+                                  (Integer/parseInt max-parallelism)))
+                              (.. Runtime getRuntime availableProcessors)))
         _ (when max-parallelism (assert (pos? max-parallelism) max-parallelism))
         ^java.util.concurrent.ExecutorService
-        threadpool (or threadpool
-                       (when (some-> max-parallelism (> 1))
-                         (java.util.concurrent.Executors/newWorkStealingPool max-parallelism)))]
+        threadpool (when max-parallelism
+                     (or threadpool
+                         (when (some-> max-parallelism (> 1))
+                           (java.util.concurrent.Executors/newWorkStealingPool max-parallelism))))]
     (try
       (let [nsym-coll (mapv #(if (symbol? %)
                                ; namespace might not exist yet, so ns-name is not appropriate
@@ -156,7 +158,7 @@
                                         (when-let [e @terminal-error]
                                           [e])))}))
       (finally
-        (when shutdown-threadpool?
+        (when (and max-parallelism shutdown-threadpool?)
           (some-> threadpool .shutdown))))))
 
 (defn check-ns [impl ns-or-syms opt opts]

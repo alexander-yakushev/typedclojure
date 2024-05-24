@@ -75,7 +75,7 @@
                             (if (r/Type? t)
                               (prs/unparse-type t (assoc opts ::uvs/verbose-types true))
                               t))))
-        instrumented-checker (reify
+        instrumented-checker checker #_(reify
                                clojure.lang.IAtom2
                                (swapVals [_ f] (.swapVals checker f))
                                (swapVals [_ f arg] (.swapVals checker f arg))
