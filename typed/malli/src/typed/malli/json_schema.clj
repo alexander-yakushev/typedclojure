@@ -8,9 +8,9 @@
 
 (ns typed.malli.json-schema
   "Public API for typed `malli.json-schema` ops."
-  (:refer-clojure :exclude [requiring-resolve])
+  
   (:require [malli.json-schema :as mj]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]))
+            ))
 
 (defmacro transform [t]
   `(mj/transform

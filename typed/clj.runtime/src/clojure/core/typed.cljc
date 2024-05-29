@@ -16,14 +16,13 @@ for checking namespaces, cf for checking individual forms."}
                             ; keep these since the deprecated_wrapper_macros ns may intern these names
                             for doseq dotimes 
                             defn atom ref cast
-                            #?(:clj requiring-resolve)
                             #_filter #_remove])
   (:require [clojure.core :as core]
             [clojure.core.typed.import-macros :as import-m]
             ; also for `import-macros` below
             [clojure.core.typed.macros :as macros]
             ;; must be present as clojure.core.typed.impl expands to use it
-            #?(:clj [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]])))
+            ))
 
 ;=============================================================
 ; # core.typed

@@ -1,9 +1,9 @@
 (ns typed.dev
   {:clojure.tools.namespace.repl/unload false}
-  (:refer-clojure :exclude [requiring-resolve])
+  
   (:require [clojure.repl :refer :all]
             [typed.clojure :as t]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]))
+            ))
 
 (defonce watchers (atom []))
 

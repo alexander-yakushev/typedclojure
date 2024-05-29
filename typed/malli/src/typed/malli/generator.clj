@@ -8,9 +8,9 @@
 
 (ns typed.malli.generator
   "Public API for typed `malli.generator` ops."
-  (:refer-clojure :exclude [requiring-resolve])
+  
   (:require [malli.generator :as mg]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]))
+            ))
 
 (defmacro generate [t & args]
   `(mg/generate

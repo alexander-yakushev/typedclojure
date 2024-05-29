@@ -11,10 +11,10 @@
 ;; the canonical version is in the src folder
 (ns ^:no-doc clojure.core.typed.macros
   (:refer-clojure :exclude [type defprotocol fn loop dotimes let for doseq
-                            defn atom ref #?(:clj requiring-resolve)])
+                            defn atom ref])
   (:require [clojure.core :as core]
             [clojure.core.typed.platform-case :refer [platform-case]]
-            #?(:clj [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]])))
+            ))
 
 ;; TODO move all these macros to typed.clojure
 (core/defn typed-sym [&env sym]

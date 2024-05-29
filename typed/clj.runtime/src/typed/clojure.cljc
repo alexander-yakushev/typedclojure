@@ -12,7 +12,7 @@
   ^:typed.clojure/ignore
   typed.clojure
   (:refer-clojure :exclude [type defprotocol #_letfn fn loop dotimes let for doseq
-                            defn atom ref cast #?(:clj requiring-resolve)])
+                            defn atom ref cast])
   (:require #?(;; for self hosted CLJS normal :require's from .clj/c files. for
                ;; .clj{s,c} files, loaded via :require-macros in typed/clojure.cljs.
                :cljs cljs.core.typed
@@ -21,7 +21,7 @@
                :default clojure.core.typed)
             [clojure.core :as cc]
             [clojure.core.typed.platform-case :refer [platform-case]]
-            #?(:clj [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]])))
+            ))
 
 (defmacro ^::ignore ann
   "Annotate varsym with type. If unqualified, qualify in the current namespace.

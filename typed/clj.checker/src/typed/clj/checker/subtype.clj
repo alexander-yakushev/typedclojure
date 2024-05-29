@@ -8,7 +8,7 @@
 
 (ns ^:no-doc typed.clj.checker.subtype
   "Use [[subtype?]] to check if s <: t, and [[subtype-filter?]] for filters."
-  (:refer-clojure :exclude [every? requiring-resolve repeatedly])
+  (:refer-clojure :exclude [every? repeatedly])
   (:require [clojure.core.typed.coerce-utils :as coerce]
             [clojure.core.typed.current-impl :as impl]
             [clojure.core.typed.errors :as err]
@@ -16,7 +16,6 @@
             [typed.cljc.runtime.perf-utils :refer [repeatedly every?]]
             [clojure.set :as set]
             [clojure.core.typed.util-vars :as vs]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]
             [typed.cljc.checker.check :as check]
             [typed.clj.checker.assoc-utils :as assoc-u]
             [typed.clj.checker.parse-unparse :as prs]

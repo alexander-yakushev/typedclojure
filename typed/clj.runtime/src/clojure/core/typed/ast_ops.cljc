@@ -7,10 +7,10 @@
 ;;   You must not remove this notice, or any other, from this software.
 
 (ns ^:no-doc clojure.core.typed.ast-ops
-  #?(:clj (:refer-clojure :exclude [requiring-resolve]))
+  
   (:require [clojure.core.typed.errors :as err]
             [typed.cljc.runtime.env :as env]
-            #?(:clj [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]])))
+))
 
 (defn resolve-Name [{:keys [name] :as expr} opts]
   {:pre [(#{:Name} (:op expr))]}

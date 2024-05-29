@@ -7,11 +7,11 @@
 ;;   You must not remove this notice, or any other, from this software.
 
 (ns typed.cljc.checker.check-ns-common
-  (:refer-clojure :exclude [requiring-resolve delay])
+  
   (:require [clojure.core.cache :as cache]
             [clojure.string :as str]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]
-            [io.github.frenchy64.fully-satisfies.safe-locals-clearing :refer [delay]]
+
+
             [typed.clj.checker.check :as chk-clj]
             [typed.clj.checker.file-mapping :as file-map]
             [typed.cljc.checker.lex-env :as lex-env]

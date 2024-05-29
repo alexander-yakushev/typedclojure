@@ -8,9 +8,9 @@
 
 (ns typed.malli.swagger
   "Public API for typed `malli.swagger` ops."
-  (:refer-clojure :exclude [requiring-resolve])
+  
   (:require [malli.swagger :as msw]
-            [io.github.frenchy64.fully-satisfies.requiring-resolve :refer [requiring-resolve]]))
+            ))
 
 (defmacro transform [t]
   `(msw/transform
