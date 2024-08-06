@@ -73,8 +73,8 @@
             c-name #?(:cljr '.ctor :default (symbol (.getName class)))  ;;                                                                  ;; in .NET, ctors are named .ctor, not with the class name
             argc (count args)
             tags (mapv :tag args)]
-        (let [[ctor & rest] (->> (filter #(= (count (:parameter-types %)) argc)
-                                         (ju/members class c-name))
+        (let [[ctor & rest] (->> (eduction (filter #(= (count (:parameter-types %)) argc))
+                                           (ju/members class c-name))
                                  (ju/try-best-match tags))]
           (if ctor
             (if (empty? rest)
@@ -92,10 +92,10 @@
 (defn validate-call [{:keys [class instance method args tag env op] :as ast}]
   (let [argc (count args)
         instance? (= :instance-call op)
-        f (if instance? ju/instance-methods ju/static-methods)]
-    (if-let [matching-methods (not-empty (f class method argc))]
-      (let [tags (mapv :tag args)
-            [m & rest :as matching] (ju/try-best-match tags matching-methods)]
+        f (if instance? ju/instance-methods ju/static-methods)
+        tags (mapv :tag args)]
+    (if-let [matching-methods (not-empty (into [] (f class method argc)))]
+      (let [[m & rest :as matching] (ju/try-best-match tags matching-methods)]
         (if m
           (let [all-ret-equals? (apply = (map :return-type matching))]
             (if (or (empty? rest)
@@ -274,7 +274,7 @@
       AST node which can be either a :maybe-class or a :maybe-host-form,
       those nodes are documented in the tools.analyzer quickref.
       The function must return a valid tools.analyzer.jvm AST node."
-  {:pass-info {:walk :post :depends #{;; replace
+  {:pass-info {:walk :post :depends #{ ;; replace
                                       #'infer-tag/infer-tag
                                       ;; replace
                                       #'analyze-host-expr/analyze-host-expr
@@ -287,3 +287,42 @@
       tag (assoc :tag (validate-tag' :tag tag ast opts))
       o-tag (assoc :o-tag (validate-tag' :o-tag o-tag ast opts))
       return-tag (assoc :return-tag (validate-tag' :return-tag return-tag ast opts)))))
+
+#_(defn validate
+  "Validate tags, classes, method calls.
+   Throws exceptions when invalid forms are encountered, replaces
+   class symbols with class objects.
+
+   Passes opts:
+   * :validate/throw-on-arity-mismatch
+      If true, validate will throw on potential arity mismatch
+   * :validate/wrong-tag-handler
+      If bound to a function, will invoke that function instead of
+      throwing on invalid tag.
+      The function takes the tag key (or :name/tag if the node is :def and
+      the wrong tag is the one on the :name field meta) and the originating
+      AST node and must return a map (or nil) that will be merged into the AST,
+      possibly shadowing the wrong tag with Object or nil.
+   * :validate/unresolvable-symbol-handler
+      If bound to a function, will invoke that function instead of
+      throwing on unresolvable symbol.
+      The function takes three arguments: the namespace (possibly nil)
+      and name part of the symbol, as symbols and the originating
+      AST node which can be either a :maybe-class or a :maybe-host-form,
+      those nodes are documented in the tools.analyzer quickref.
+      The function must return a valid tools.analyzer.jvm AST node."
+  {:pass-info {:walk :post :depends #{ ;; replace
+                                      #'infer-tag/infer-tag
+                                      ;; replace
+                                      #'analyze-host-expr/analyze-host-expr
+                                      ;; validate-recur doesn't seem to play nicely with core.async/go
+                                      #_#'validate-recur/validate-recur}}}
+  [{:keys [tag form env] :as ast}]
+  (let [tag (:tag ast)
+        ast (-validate ast)
+        o-tag (:o-tag ast)
+        return-tag (:return-tag ast)]
+    (cond-> (-validate ast)
+      tag (assoc :tag (validate-tag' tag ast))
+      o-tag (assoc :o-tag (validate-tag' o-tag ast))
+      return-tag (assoc :return-tag (validate-tag' return-tag ast)))))

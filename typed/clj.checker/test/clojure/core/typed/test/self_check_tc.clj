@@ -82,7 +82,7 @@
 
   typed.cljc.checker.cs-gen/subtype?
 
-  (prof/generate-diffgraph 1 2 {})
+  (prof/generate-flamegraph 1 {})
   typed.cljc.analyzer.utils/source-info
 
   typed.clj.analyzer/unanalyzed
