@@ -77,6 +77,11 @@
         (tvar/with-extended-new-tvars scoped-names fresh-names)
         (bnds/with-extended-bnds fresh-names bndss))))
 
+(defn with-free-mappings2 [opts syms bndss]
+  (-> opts
+      (tvar/with-extended-new-tvars2 syms)
+      (bnds/with-extended-bnds syms bndss)))
+
 (def bounded-frees-key? r/F?)
 (def bounded-frees-val? r/Kind?)
 ;; extremely slow
@@ -85,6 +90,7 @@
 (defn with-bounded-frees
   "Scopes bfrees, a map of instances of F to their bounds, inside body."
   [opts bfrees]
+  {:pre [(bounded-frees? bfrees)]}
   (let [_ (assert (bounded-frees? bfrees) bfrees)]
     (with-free-mappings opts
       (reduce-kv (fn [m f bnds]
@@ -93,9 +99,16 @@
                    (assoc m (:name f) {:F f :bnds bnds}))
                  {} bfrees))))
 
+(defn with-bounded-frees2
+  "Scopes bfrees, a map of instances of F to their bounds, inside body."
+  [opts fresh-vars bndss]
+  (with-free-mappings2 opts fresh-vars bndss))
+
 (defn with-free-symbols
   "Scopes sfrees, a sequence of symbols, inside body as free variables, with default bounds."
   [opts sfrees]
+  (assert (every? simple-symbol? sfrees) (str (pr-str sfrees) " ---" (pr-str (map type sfrees))))
+  #_(with-bounded-frees2 opts sfrees (repeat r/no-bounds))
   (with-free-mappings
     opts
     (into {} (map (fn [f]

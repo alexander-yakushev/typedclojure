@@ -1110,10 +1110,11 @@
   (let [subst-all @(subst-all-var)
         ; these names are eliminated immediately, they don't need to be
         ; created with fresh-symbol
-        names (mapv (fn [_] (gensym "inst-and-subst")) (range (count ts)))
-        opts (free-ops/with-bounded-frees opts (zipmap (map r/make-F names)
-                                                       ;; asserted as precondition
-                                                       (repeat r/no-bounds)))
+        n (count ts)
+        names (repeatedly n #(gensym "inst-and-subst"))
+        opts (free-ops/with-bounded-frees2 opts names
+               ;; asserted as precondition
+               (repeat n r/no-bounds))
         t (r/assert-Type (instantiate-many names target opts))
         subst (make-simple-substitution names ts)]
     (subst-all subst t opts)))
@@ -1236,9 +1237,8 @@
          ((some-fn r/TypeFn? r/Type? r/Kind?) body)
          ((some-fn nil? map?) meta)]
    :post [(r/Type? %)]}
-  (let [original-names (mapv (comp r/F-original-name r/make-F) names)
-        ab (let [opts (free-ops/with-bounded-frees opts
-                        (zipmap (map r/make-F names) bbnds))]
+  (let [original-names (mapv #(or (:original-name (clojure.core/meta %)) %) names)
+        ab (let [opts (free-ops/with-bounded-frees2 opts names bbnds)]
              #(abstract-many names % opts))
         t (r/TypeFn-maker (count names)
                           variances
@@ -1254,7 +1254,7 @@
          (r/TypeFn? typefn)]}
   (assert (= (:nbound typefn) (count names)) "Wrong number of names")
   (instantiate-many names (:scope typefn)
-                    (free-ops/with-bounded-frees opts (zipmap (map r/make-F names) bbnds))))
+                    (free-ops/with-bounded-frees2 opts names bbnds)))
 
 (t/ann ^:no-check TypeFn-bbnds* [(t/Seqable t/Sym) TypeFn t/Any -> (t/Vec r/Kind)])
 (defn TypeFn-bbnds* [names typefn opts]
@@ -1352,9 +1352,7 @@
   (let [bbnds (Poly-bbnds* names poly opts)]
     (assert (= (:nbound poly) (count names)) "Wrong number of names")
     (instantiate-many names (:scope poly)
-                      (free-ops/with-bounded-frees
-                        opts 
-                        (zipmap (map r/make-F names) bbnds)))))
+                      (free-ops/with-bounded-frees2 opts names bbnds))))
 
 ;; PolyDots
 
@@ -1453,7 +1451,7 @@
           opts)))
     (let [bbnds (TypeFn-bbnds* names t opts)
           body (TypeFn-body* names bbnds t opts)
-          opts (-> opts (free-ops/with-bounded-frees (zipmap (map r/make-F names) bbnds)))
+          opts (free-ops/with-bounded-frees2 opts names bbnds)
           ;;check bounds
           _ (perf/reduce
               (fn [_ argn nm type bnd]
@@ -1491,8 +1489,7 @@
                         nms (Poly-fresh-symbols* t)
                         bbnds (Poly-bbnds* nms t opts)
                         body (Poly-body* nms t opts)
-                        opts (-> opts (free-ops/with-bounded-frees
-                                        (zipmap (map r/make-F nms) bbnds)))]
+                        opts (-> opts (free-ops/with-bounded-frees2 nms bbnds))]
                     (dorun (map (fn [nm type bnd]
                                   (when-not (ind/has-kind? type bnd opts)
                                     (err/tc-error (str "Polymorphic type variable " (r/F-original-name (r/make-F nm))
@@ -2879,9 +2876,8 @@
                          (let [names (TypeFn-fresh-symbols* ty)
                                bbnds (TypeFn-bbnds* names ty opts)
                                body (TypeFn-body* names bbnds ty opts)
-                               bmap (zipmap (map r/make-F names) bbnds)
                                ;;FIXME type variables are scoped left-to-right in bounds
-                               opts' (free-ops/with-bounded-frees opts bmap)
+                               opts' (free-ops/with-bounded-frees2 opts names bbnds)
                                bbnds' (mapv!= bbnds #(type-rec % opts'))
                                body' (type-rec body opts')
                                changed? (or (not (identical? bbnds bbnds'))
@@ -2896,9 +2892,8 @@
                            :Poly (let [names (Poly-fresh-symbols* ty)
                                        body (Poly-body* names ty opts)
                                        bbnds (Poly-bbnds* names ty opts)
-                                       bmap (zipmap (map r/make-F names) bbnds)
                                        ;;FIXME type variables are scoped left-to-right in bounds
-                                       opts' (free-ops/with-bounded-frees opts bmap)
+                                       opts' (free-ops/with-bounded-frees2 opts names bbnds)
                                        bbnds' (mapv!= bbnds #(type-rec % opts'))
                                        body' (type-rec body opts')
                                        changed? (or (not (identical? bbnds bbnds'))
@@ -2909,9 +2904,8 @@
                            :PolyDots (let [names (PolyDots-fresh-symbols* ty)
                                            body (PolyDots-body* names ty opts)
                                            bbnds (PolyDots-bbnds* names ty opts)
-                                           bmap (zipmap (map r/make-F names) bbnds)
                                            ;;FIXME type variables are scoped left-to-right in bounds
-                                           opts' (free-ops/with-bounded-frees opts bmap)
+                                           opts' (free-ops/with-bounded-frees2 opts names bbnds)
                                            bbnds' (mapv!= bbnds #(type-rec % opts'))
                                            body' (type-rec body opts')
                                            changed? (or (not (identical? bbnds bbnds'))

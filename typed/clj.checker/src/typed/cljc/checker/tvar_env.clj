@@ -62,10 +62,24 @@
                     (extend-one env var fresh-var))
                   env vars fresh-vars))))
 
+(defn- extend-many2
+  "Extends env with vars. If fresh-vars are provided, the vars will map to them
+  pairwise in the resulting environment."
+  [env syms]
+  {:post [(every? symbol? syms)
+          (tvar-env? %)]}
+  (reduce #(assoc %1 %2 (r/make-F %2)) env syms))
+
 (defn with-extended-new-tvars
   "Extends with new type variables (provided by (e.g., Poly-fresh))"
   [opts vars fresh-vars]
   (update opts ::current-tvars (fnil extend-many initial-tvar-env) vars fresh-vars))
+
+(defn with-extended-new-tvars2
+  "Extends with new type variables (provided by (e.g., Poly-fresh))"
+  [opts syms]
+  (let [current-tvars (::current-tvars opts initial-tvar-env)]
+    (assoc opts ::current-tvars (extend-many2 current-tvars syms))))
 
 #_
 (defn with-extended-tvars
