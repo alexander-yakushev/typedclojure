@@ -73,7 +73,8 @@
       :what #".+(typed\.cljc\.runtime\.env-utils/force-type;)"
       :replacement ";$1"}])
   (prof/set-default-profiling-options {:predefined-transforms transforms})
-  
+
+  (prof/generate-diffgraph 2 3 {})
   (time+ 5000 (with-out-str (check-tc)))
   (prof/profile {:title "Parallel"} (time+ 10000 (with-out-str (check-tc))))
   (prof/profile {:event :alloc}
@@ -163,4 +164,24 @@
   typed.cljc.checker.type-ctors/Datatype-ancestors
 
   typed.clj.checker.subtype/has-kind?
+
+  typed.cljc.checker.name-env/resolve-name*
+
+  typed.cljc.checker.type-ctors/resolve-Name
+
+  typed.cljc.checker.type-ctors/fresh-symbol
+
+  typed.cljc.checker.type-ctors/instantiate-many
+
+  typed.cljc.checker.type-ctors/TypeFn-bbnds*
+
+  typed.cljc.checker.type-ctors/instantiate-typefn
+
+  typed.cljc.checker.type-ctors/TypeFn-body*
+
+  typed.cljc.checker.tvar-env/extend-many
+
+  typed.cljc.checker.type-ctors/TypeFn-body*
+
+  typed.clj.checker.subtype/subtype-RClass
   )
