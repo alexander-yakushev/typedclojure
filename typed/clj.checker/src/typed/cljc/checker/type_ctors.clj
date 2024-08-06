@@ -76,7 +76,10 @@
   ([s hint]
    {:pre [(symbol? s)]
     :post [(symbol? %)]}
-   (with-meta (gensym (str s hint)) {:original-name s})))
+   (-> (.concat (str s) (str hint))
+       (.concat (str (clojure.lang.RT/nextID)))
+       clojure.lang.Symbol/intern
+       (with-meta {:original-name s}))))
 
 (declare Un make-Union make-Intersection fully-resolve-type fully-resolve-non-rec-type flatten-unions)
 
@@ -1577,11 +1580,11 @@
   (p/-requires-resolving? ty opts))
 
 (t/ann ^:no-check resolve-Name [Name t/Any -> r/Type])
-(defn resolve-Name [nme opts]
-  {:pre [(r/Name? nme)]
-   :post [(r/Type? %)]}
-  (let [resolve-name* (requiring-resolve 'typed.cljc.checker.name-env/resolve-name*)]
-    (resolve-name* (:id nme) opts)))
+(let [resolve-name* (delay (requiring-resolve 'typed.cljc.checker.name-env/resolve-name*))]
+  (defn resolve-Name [nme opts]
+    {:pre [(r/Name? nme)]
+     :post [(r/Type? %)]}
+    (@resolve-name* (:id nme) opts)))
 
 (t/ann fully-resolve-type [r/Type t/Any -> r/Type])
 (defn fully-resolve-type
