@@ -1280,8 +1280,9 @@
 (defn TypeFn-fresh-symbols* [tfn]
   {:pre [(r/TypeFn? tfn)]
    :post [((every-pred seq (con/every-c? symbol?)) %)]}
-  (map fresh-symbol (or (TypeFn-free-names* tfn)
-                        (repeatedly (:nbound tfn) #(gensym "fresh-sym")))))
+  (if-let [free-names (TypeFn-free-names* tfn)]
+    (mapv fresh-symbol free-names)
+    (repeatedly (:nbound tfn) #(fresh-symbol 'fresh-sym))))
 
 ;; Poly
 
