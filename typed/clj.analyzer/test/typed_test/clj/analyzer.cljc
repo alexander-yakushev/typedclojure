@@ -43,7 +43,9 @@
             ((juxt :op :val) (ast Number)))))
   (is (= [:const clojure.lang.Compiler]
          ((juxt :op :val) (ast clojure.lang.Compiler))))
-		 
+  (is (= [:const (clojure.lang.RT/classForName "[[B")]
+         ((juxt :op :result) (ast byte/2))))
+
   #?(:cljr
      (is (= [:static-field 'specials]
             ((juxt :op :field) (ast clojure.lang.Compiler/specials))))
@@ -79,12 +81,12 @@
 
 (deftest deftype-test
   (is (some?
-        (binding [*ns* *ns*]
-          (eval `(ns ~(gensym)))
-          (ast
-            (deftype A []
-              Object
-              (#?(:cljr ToString :default toString) [_] (A.) "a")))))))
+       (binding [*ns* *ns*]
+         (eval `(ns ~(gensym)))
+         (ast
+          (deftype A []
+            Object
+            (#?(:cljr ToString :default toString) [_] (A.) "a")))))))
 
 (deftest uniquify-test
   (let [ret (ast' (let [a 1]
